@@ -1,0 +1,9 @@
+{
+  "name": "dynamic-web-strings-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "NODE_PATH=/Users/mac/node_modules node tests/run.mjs"
+  },
+  "comment": "node_modules is intentionally NOT installed — Playwright is provided by the host at /Users/mac/node_modules/playwright (already on disk)."
+}
