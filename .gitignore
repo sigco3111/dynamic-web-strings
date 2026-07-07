@@ -25,3 +25,7 @@ build/
 
 # Orchestrator session state (internal)
 .omo/
+
+# Hermes session scratch (ad-hoc verification leftover; auto-cleaned)
+.hermes_tmp/
+.vercel
