@@ -576,6 +576,11 @@ async function runScenario(page) {
   });
   if (sliderMeta.max !== '18') fail(`S11: slider max=${sliderMeta.max} (expected 18)`);
   log(`  slider: min=${sliderMeta.min} max=${sliderMeta.max} step=${sliderMeta.step} value=${sliderMeta.value}`);
+
+  // Verify the default web count is 8
+  const defaultCount = await page.evaluate(() => window.WebSim.state.webCount);
+  if (defaultCount !== 8) fail(`S11: default webCount=${defaultCount} (expected 8)`);
+  log(`  ✓ default webCount=${defaultCount}`);
   // Disable breaks + wind during count check so we observe pure structural counts
   await page.evaluate(() => {
     window.WebSim.state.breakThreshold = 1000;
