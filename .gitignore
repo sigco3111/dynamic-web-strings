@@ -22,3 +22,6 @@ build/
 # Local config
 .env
 .env.local
+
+# Orchestrator session state (internal)
+.omo/
