@@ -551,6 +551,59 @@ async function runScenario(page) {
   if (totalNans > 0) fail(`S10: ${totalNans} NaN points during 1000-frame soak`);
   log(`  ✓ no NaN | maxBroken=${maxBroken} | survived 1000 frames at max wind`);
 
+  // ===== S11: Web count slider regenerates the demo =====
+  log('[S11] Web count slider');
+  const countChecks = [
+    { n: 1, expectHoriz: 1, expectVert: 0, expectPoints: 8,  expectCons: 7 },
+    { n: 2, expectHoriz: 2, expectVert: 0, expectPoints: 16, expectCons: 14 },
+    { n: 3, expectHoriz: 3, expectVert: 0, expectPoints: 24, expectCons: 21 },
+    { n: 4, expectHoriz: 3, expectVert: 1, expectPoints: 31, expectCons: 27 },
+    { n: 5, expectHoriz: 3, expectVert: 2, expectPoints: 38, expectCons: 33 },
+    { n: 6, expectHoriz: 3, expectVert: 3, expectPoints: 45, expectCons: 39 },
+  ];
+  const slider = await page.$('#count-slider');
+  if (!slider) fail('S11: #count-slider not found in HUD');
+  for (const chk of countChecks) {
+    await page.evaluate((n) => {
+      const s = document.getElementById('count-slider');
+      s.value = String(n);
+      s.dispatchEvent(new Event('input', { bubbles: true }));
+    }, chk.n);
+    await page.waitForTimeout(150);
+    const state = await page.evaluate(() => ({
+      n: window.WebSim.state.webCount,
+      points: window.WebSim.points.length,
+      cons: window.WebSim.constraints.filter(c => c.alive).length,
+      anchors: Array.from(window.WebSim.anchors).length,
+    }));
+    if (state.n !== chk.n) fail(`S11[${chk.n}]: state.webCount=${state.n} (expected ${chk.n})`);
+    if (state.points !== chk.expectPoints) fail(`S11[${chk.n}]: points=${state.points} (expected ${chk.expectPoints})`);
+    if (state.cons !== chk.expectCons) fail(`S11[${chk.n}]: cons=${state.cons} (expected ${chk.expectCons})`);
+    if (state.anchors !== chk.expectHoriz * 2 + chk.expectVert * 2) {
+      fail(`S11[${chk.n}]: anchors=${state.anchors} (expected ${chk.expectHoriz * 2 + chk.expectVert * 2})`);
+    }
+    log(`  ✓ N=${chk.n} → ${state.points} pts, ${state.cons} cons, ${state.anchors} anchors`);
+  }
+
+  // Take a screenshot at N=6 (max) for visual evidence
+  await page.screenshot({ path: resolve(BASELINE_DIR, '06-web-count-max.png'), fullPage: false });
+  // And one at N=2 (sparse) for comparison
+  await page.evaluate(() => {
+    const s = document.getElementById('count-slider');
+    s.value = '2';
+    s.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  await page.waitForTimeout(400);
+  await page.screenshot({ path: resolve(BASELINE_DIR, '07-web-count-min.png'), fullPage: false });
+  // Restore to N=3 for cleanup
+  await page.evaluate(() => {
+    const s = document.getElementById('count-slider');
+    s.value = '3';
+    s.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  await page.waitForTimeout(150);
+  log('  ✓ captured 06-web-count-max.png (N=6) and 07-web-count-min.png (N=2)');
+
   if (errors.length) {
     log('\n⚠ Page errors collected (non-fatal in some cases):');
     for (const e of errors.slice(0, 10)) log('   ' + e);

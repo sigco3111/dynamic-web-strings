@@ -234,6 +234,12 @@
       <span class="val" id="thresh-val">0.55</span>
     </div>
 
+    <div class="row">
+      <label for="count-slider">거미줄 개수</label>
+      <input id="count-slider" type="range" min="1" max="6" step="1" value="3" />
+      <span class="val" id="count-val">3</span>
+    </div>
+
     <div class="state-row">
       <span><span class="wind-dot on" id="wind-dot"></span>바람</span>
       <small style="color:#888" id="mode-label">대기 중</small>
@@ -285,6 +291,9 @@
       defaultWind: 0.8,
       defaultGravity: 1.0,
       defaultThreshold: 0.55,
+      defaultWebCount: 3,
+      maxWebCount: 6,
+      minWebCount: 1,
     };
 
     // ============================================================
@@ -298,6 +307,8 @@
     const elGravVal = document.getElementById('grav-val');
     const elThresh = document.getElementById('thresh-slider');
     const elThreshVal = document.getElementById('thresh-val');
+    const elCount = document.getElementById('count-slider');
+    const elCountVal = document.getElementById('count-val');
     const elWindDot = document.getElementById('wind-dot');
     const elReset = document.getElementById('reset-btn');
     const elClear = document.getElementById('clear-btn');
@@ -318,6 +329,7 @@
       windFactor: 1.0,                    // 1 when enabled, 0.05 when disabled
       gravity: CONFIG.defaultGravity,
       breakThreshold: CONFIG.defaultThreshold,
+      webCount: CONFIG.defaultWebCount,
 
       grabbedPointId: null,
       pullOffsetX: 0,
@@ -1001,72 +1013,72 @@
     // ============================================================
     // Demo seed
     // ============================================================
-    function seedDemo() {
-      const w = state.viewW, h = state.viewH;
-      if (w < 100 || h < 100) return;
-
-      const cy = h * 0.40;
-      // Pass coords INSIDE the snap radius (<=16px from edge)
-      const leftStart = snapToWall(8, cy);
-      const rightEnd = snapToWall(w - 8, cy);
-      if (!leftStart || !rightEnd) return;
-
-      // Main horizontal thread
-      const N = 8;
+    function addHorizontalThread(y, nPoints) {
+      const N = nPoints || 8;
+      const start = snapToWall(8, y);
+      const end = snapToWall(state.viewW - 8, y);
+      if (!start || !end) return false;
+      const seg = (end.x - start.x) / (N - 1);
       const ids = [];
-      const dx = (rightEnd.x - leftStart.x) / (N - 1);
       for (let i = 0; i < N; i++) {
-        const x = leftStart.x + i * dx;
-        const y = leftStart.y;
+        const x = start.x + i * seg;
+        const yp = start.y;
         const pinned = (i === 0 || i === N - 1);
-        ids.push(addPoint(x, y, pinned));
+        ids.push(addPoint(x, yp, pinned));
       }
       for (let i = 0; i < ids.length - 1; i++) {
         addConstraint(ids[i], ids[i + 1]);
       }
+      return true;
+    }
 
-      // A second thread slightly below for visual richness
-      const cy2 = h * 0.65;
-      const leftStart2 = snapToWall(8, cy2);
-      const rightEnd2 = snapToWall(w - 8, cy2);
-      if (leftStart2 && rightEnd2) {
-        const N2 = 6;
-        const ids2 = [];
-        const dx2 = (rightEnd2.x - leftStart2.x) / (N2 - 1);
-        for (let i = 0; i < N2; i++) {
-          const x = leftStart2.x + i * dx2;
-          const y = leftStart2.y;
-          const pinned = (i === 0 || i === N2 - 1);
-          ids2.push(addPoint(x, y, pinned));
-        }
-        for (let i = 0; i < ids2.length - 1; i++) {
-          addConstraint(ids2[i], ids2[i + 1]);
-        }
+    function addVerticalThread(x, nPoints) {
+      const N = nPoints || 7;
+      const start = snapToWall(x, 8);
+      const end = snapToWall(x, state.viewH - 8);
+      if (!start || !end) return false;
+      const seg = (end.y - start.y) / (N - 1);
+      const ids = [];
+      for (let i = 0; i < N; i++) {
+        const yp = start.y + i * seg;
+        const xp = start.x;
+        const pinned = (i === 0 || i === N - 1);
+        ids.push(addPoint(xp, yp, pinned));
+      }
+      for (let i = 0; i < ids.length - 1; i++) {
+        addConstraint(ids[i], ids[i + 1]);
+      }
+      return true;
+    }
+
+    function seedDemo() {
+      const w = state.viewW, h = state.viewH;
+      if (w < 100 || h < 100) return;
+
+      // N = total web count, 1..6
+      //   1..3  -> N horizontal threads
+      //   4..6  -> 3 horizontal + (N-3) vertical threads
+      const N = Math.max(CONFIG.minWebCount,
+                Math.min(CONFIG.maxWebCount, state.webCount || CONFIG.defaultWebCount));
+      const nHoriz = Math.min(3, N);
+      const nVert = Math.max(0, N - 3);
+
+      // Horizontal threads, evenly distributed (h * 0.25, 0.5, 0.75)
+      const horizYs = [h * 0.25, h * 0.50, h * 0.75];
+      for (let i = 0; i < nHoriz; i++) {
+        addHorizontalThread(horizYs[i], 8);
       }
 
-      // A vertical thread from top to bottom (slight curve)
-      const cx = w * 0.5;
-      const topSnap = snapToWall(cx, 8);
-      const botSnap = snapToWall(cx, h - 8);
-      if (topSnap && botSnap) {
-        const N3 = 7;
-        const ids3 = [];
-        const dy3 = (botSnap.y - topSnap.y) / (N3 - 1);
-        for (let i = 0; i < N3; i++) {
-          const y = topSnap.y + i * dy3;
-          const x = topSnap.x;
-          const pinned = (i === 0 || i === N3 - 1);
-          ids3.push(addPoint(x, y, pinned));
-        }
-        for (let i = 0; i < ids3.length - 1; i++) {
-          addConstraint(ids3[i], ids3[i + 1]);
-        }
+      // Vertical threads at x = 0.25, 0.50, 0.75 of width
+      const vertXs = [w * 0.25, w * 0.50, w * 0.75];
+      for (let i = 0; i < nVert; i++) {
+        addVerticalThread(vertXs[i], 7);
       }
     }
 
     function reset() {
       clearAll();
-      // Re-apply HUD defaults
+      // Re-apply HUD defaults (keep user's current webCount)
       state.windStrength = CONFIG.defaultWind;
       state.gravity = CONFIG.defaultGravity;
       state.breakThreshold = CONFIG.defaultThreshold;
@@ -1079,6 +1091,8 @@
       elGravVal.textContent = state.gravity.toFixed(2);
       elThresh.value = state.breakThreshold;
       elThreshVal.textContent = state.breakThreshold.toFixed(2);
+      elCount.value = state.webCount;
+      elCountVal.textContent = String(state.webCount);
 
       updateWindIndicator();
       seedDemo();
@@ -1115,6 +1129,15 @@
       elThresh.addEventListener('input', () => {
         state.breakThreshold = parseFloat(elThresh.value);
         elThreshVal.textContent = state.breakThreshold.toFixed(2);
+      });
+      elCount.addEventListener('input', () => {
+        const n = parseInt(elCount.value, 10);
+        if (n === state.webCount) return;
+        state.webCount = n;
+        elCountVal.textContent = String(n);
+        // Re-seed with the new count
+        clearAll();
+        seedDemo();
       });
       elReset.addEventListener('click', () => { unlockAudio(); reset(); });
       elClear.addEventListener('click', () => { unlockAudio(); clearAll(); });
