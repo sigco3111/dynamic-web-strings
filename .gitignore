@@ -1,0 +1,24 @@
+# OS / Editor junk
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node (in case anyone adds a toolchain later)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build artifacts
+dist/
+build/
+*.min.js
+*.bundle.js
+
+# Local config
+.env
+.env.local
