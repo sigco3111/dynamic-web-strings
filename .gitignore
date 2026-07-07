@@ -28,4 +28,3 @@ build/
 
 # Hermes session scratch (ad-hoc verification leftover; auto-cleaned)
 .hermes_tmp/
-.vercel
