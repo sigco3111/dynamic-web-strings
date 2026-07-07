@@ -552,23 +552,44 @@ async function runScenario(page) {
   log(`  ✓ no NaN | maxBroken=${maxBroken} | survived 1000 frames at max wind`);
 
   // ===== S11: Web count slider regenerates the demo =====
-  log('[S11] Web count slider');
-  const countChecks = [
-    { n: 1, expectHoriz: 1, expectVert: 0, expectPoints: 8,  expectCons: 7 },
-    { n: 2, expectHoriz: 2, expectVert: 0, expectPoints: 16, expectCons: 14 },
-    { n: 3, expectHoriz: 3, expectVert: 0, expectPoints: 24, expectCons: 21 },
-    { n: 4, expectHoriz: 3, expectVert: 1, expectPoints: 31, expectCons: 27 },
-    { n: 5, expectHoriz: 3, expectVert: 2, expectPoints: 38, expectCons: 33 },
-    { n: 6, expectHoriz: 3, expectVert: 3, expectPoints: 45, expectCons: 39 },
-  ];
+  log('[S11] Web count slider (1..18)');
+  // Compute expected counts programmatically.
+  // Each horizontal: 8 pts, 7 cons, 2 anchors. Each vertical: 7 pts, 6 cons, 2 anchors.
+  const expFor = (N) => {
+    const h = Math.min(6, N);
+    const v = Math.max(0, N - 6);
+    return {
+      expectHoriz: h,
+      expectVert: v,
+      expectPoints: h * 8 + v * 7,
+      expectCons:   h * 7 + v * 6,
+      expectAnchors: (h + v) * 2,
+    };
+  };
+  const countChecks = [1, 2, 3, 6, 9, 12, 15, 18];
   const slider = await page.$('#count-slider');
   if (!slider) fail('S11: #count-slider not found in HUD');
-  for (const chk of countChecks) {
-    await page.evaluate((n) => {
+  // Verify slider attributes
+  const sliderMeta = await page.evaluate(() => {
+    const s = document.getElementById('count-slider');
+    return { min: s.min, max: s.max, value: s.value, step: s.step };
+  });
+  if (sliderMeta.max !== '18') fail(`S11: slider max=${sliderMeta.max} (expected 18)`);
+  log(`  slider: min=${sliderMeta.min} max=${sliderMeta.max} step=${sliderMeta.step} value=${sliderMeta.value}`);
+  // Disable breaks + wind during count check so we observe pure structural counts
+  await page.evaluate(() => {
+    window.WebSim.state.breakThreshold = 1000;
+    window.WebSim.state.windEnabled = false;
+    window.WebSim.state.windStrength = 0;
+    window.WebSim.state.gravity = 0;
+  });
+  for (const n of countChecks) {
+    const exp = expFor(n);
+    await page.evaluate((nn) => {
       const s = document.getElementById('count-slider');
-      s.value = String(n);
+      s.value = String(nn);
       s.dispatchEvent(new Event('input', { bubbles: true }));
-    }, chk.n);
+    }, n);
     await page.waitForTimeout(150);
     const state = await page.evaluate(() => ({
       n: window.WebSim.state.webCount,
@@ -576,33 +597,77 @@ async function runScenario(page) {
       cons: window.WebSim.constraints.filter(c => c.alive).length,
       anchors: Array.from(window.WebSim.anchors).length,
     }));
-    if (state.n !== chk.n) fail(`S11[${chk.n}]: state.webCount=${state.n} (expected ${chk.n})`);
-    if (state.points !== chk.expectPoints) fail(`S11[${chk.n}]: points=${state.points} (expected ${chk.expectPoints})`);
-    if (state.cons !== chk.expectCons) fail(`S11[${chk.n}]: cons=${state.cons} (expected ${chk.expectCons})`);
-    if (state.anchors !== chk.expectHoriz * 2 + chk.expectVert * 2) {
-      fail(`S11[${chk.n}]: anchors=${state.anchors} (expected ${chk.expectHoriz * 2 + chk.expectVert * 2})`);
-    }
-    log(`  ✓ N=${chk.n} → ${state.points} pts, ${state.cons} cons, ${state.anchors} anchors`);
+    if (state.n !== n) fail(`S11[${n}]: state.webCount=${state.n} (expected ${n})`);
+    if (state.points !== exp.expectPoints) fail(`S11[${n}]: points=${state.points} (expected ${exp.expectPoints})`);
+    if (state.cons !== exp.expectCons) fail(`S11[${n}]: cons=${state.cons} (expected ${exp.expectCons})`);
+    if (state.anchors !== exp.expectAnchors) fail(`S11[${n}]: anchors=${state.anchors} (expected ${exp.expectAnchors})`);
+    log(`  ✓ N=${String(n).padStart(2)} → ${String(state.points).padStart(3)} pts, ${String(state.cons).padStart(3)} cons, ${String(state.anchors).padStart(2)} anchors  (h=${exp.expectHoriz}, v=${exp.expectVert})`);
   }
 
-  // Take a screenshot at N=6 (max) for visual evidence
+  // Stability at N=18 (max): 1000 frames at high wind/gravity, no NaN
+  log('  [stress test @ N=18]');
+  await page.evaluate(() => {
+    window.WebSim.state.windStrength = 2.5;
+    window.WebSim.state.windEnabled = true;
+    window.WebSim.state.gravity = 2.0;
+    window.WebSim.state.breakThreshold = 0.4;
+  });
+  let stressNans = 0;
+  for (let i = 0; i < 10; i++) {
+    await page.waitForTimeout(100);
+    const probe = await page.evaluate(() => {
+      let nanCount = 0;
+      for (const p of window.WebSim.points) {
+        if (!isFinite(p.x) || !isFinite(p.y) || !isFinite(p.px) || !isFinite(p.py)) nanCount++;
+      }
+      return {
+        nanCount,
+        particleCount: window.WebSim.particles.length,
+        alive: window.WebSim.constraints.filter(c => c.alive).length,
+      };
+    });
+    stressNans += probe.nanCount;
+    if (probe.particleCount > 200) fail(`S11: particle pool exceeded 200 at N=18 (got ${probe.particleCount})`);
+  }
+  if (stressNans > 0) fail(`S11: ${stressNans} NaN points at N=18 stress test`);
+  log('  ✓ no NaN at N=18 stress');
+
+  // Visual evidence: capture N=18 (max) and N=2 (sparse) and N=1 (min)
+  await page.evaluate(() => {
+    const s = document.getElementById('count-slider');
+    s.value = '18';
+    s.dispatchEvent(new Event('input', { bubbles: true }));
+    window.WebSim.state.windStrength = 0.8;
+    window.WebSim.state.gravity = 1.0;
+    window.WebSim.state.windEnabled = true;
+  });
+  await page.waitForTimeout(800);
   await page.screenshot({ path: resolve(BASELINE_DIR, '06-web-count-max.png'), fullPage: false });
-  // And one at N=2 (sparse) for comparison
+
   await page.evaluate(() => {
     const s = document.getElementById('count-slider');
     s.value = '2';
     s.dispatchEvent(new Event('input', { bubbles: true }));
   });
-  await page.waitForTimeout(400);
+  await page.waitForTimeout(600);
   await page.screenshot({ path: resolve(BASELINE_DIR, '07-web-count-min.png'), fullPage: false });
+
+  await page.evaluate(() => {
+    const s = document.getElementById('count-slider');
+    s.value = '1';
+    s.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  await page.waitForTimeout(400);
+  await page.screenshot({ path: resolve(BASELINE_DIR, '08-web-count-one.png'), fullPage: false });
+
   // Restore to N=3 for cleanup
   await page.evaluate(() => {
     const s = document.getElementById('count-slider');
     s.value = '3';
     s.dispatchEvent(new Event('input', { bubbles: true }));
   });
-  await page.waitForTimeout(150);
-  log('  ✓ captured 06-web-count-max.png (N=6) and 07-web-count-min.png (N=2)');
+  await page.waitForTimeout(200);
+  log('  ✓ captured 06-web-count-max.png (N=18), 07-web-count-min.png (N=2), 08-web-count-one.png (N=1)');
 
   if (errors.length) {
     log('\n⚠ Page errors collected (non-fatal in some cases):');

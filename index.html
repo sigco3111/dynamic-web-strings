@@ -236,7 +236,7 @@
 
     <div class="row">
       <label for="count-slider">거미줄 개수</label>
-      <input id="count-slider" type="range" min="1" max="6" step="1" value="3" />
+      <input id="count-slider" type="range" min="1" max="18" step="1" value="3" />
       <span class="val" id="count-val">3</span>
     </div>
 
@@ -292,7 +292,7 @@
       defaultGravity: 1.0,
       defaultThreshold: 0.55,
       defaultWebCount: 3,
-      maxWebCount: 6,
+      maxWebCount: 18,
       minWebCount: 1,
     };
 
@@ -1055,24 +1055,24 @@
       const w = state.viewW, h = state.viewH;
       if (w < 100 || h < 100) return;
 
-      // N = total web count, 1..6
-      //   1..3  -> N horizontal threads
-      //   4..6  -> 3 horizontal + (N-3) vertical threads
+      // N = total web count, 1..18
+      //   1..6   -> N horizontal threads (evenly distributed with margin)
+      //   7..18  -> 6 horizontal + (N-6) vertical threads
       const N = Math.max(CONFIG.minWebCount,
                 Math.min(CONFIG.maxWebCount, state.webCount || CONFIG.defaultWebCount));
-      const nHoriz = Math.min(3, N);
-      const nVert = Math.max(0, N - 3);
+      const nHoriz = Math.min(6, N);
+      const nVert = Math.max(0, N - 6);
 
-      // Horizontal threads, evenly distributed (h * 0.25, 0.5, 0.75)
-      const horizYs = [h * 0.25, h * 0.50, h * 0.75];
+      // Horizontal threads, evenly distributed with margin (h * 1/(n+1), 2/(n+1), ..., n/(n+1))
       for (let i = 0; i < nHoriz; i++) {
-        addHorizontalThread(horizYs[i], 8);
+        const y = h * (i + 1) / (nHoriz + 1);
+        addHorizontalThread(y, 8);
       }
 
-      // Vertical threads at x = 0.25, 0.50, 0.75 of width
-      const vertXs = [w * 0.25, w * 0.50, w * 0.75];
+      // Vertical threads, evenly distributed with margin
       for (let i = 0; i < nVert; i++) {
-        addVerticalThread(vertXs[i], 7);
+        const x = w * (i + 1) / (nVert + 1);
+        addVerticalThread(x, 7);
       }
     }
 
