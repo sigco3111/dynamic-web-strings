@@ -10,7 +10,7 @@
 
 ## 🎬 라이브 데모
 
-> **👉 [https://dynamic-web-strings.vercel.app/](https://dynamic-web-strings.vercel.app/)** — 브라우저에서 바로 실행
+> **👉 [https://sigco3111.github.io/dynamic-web-strings/](https://sigco3111.github.io/dynamic-web-strings/)** — 브라우저에서 바로 실행
 
 | | |
 |---|---|
@@ -36,7 +36,7 @@
 | **모델** | MiniMax-M3 |
 | **실행 환경** | OpenCode CLI |
 | **저장소** | [`sigco3111/dynamic-web-strings`](https://github.com/sigco3111/dynamic-web-strings) |
-| **라이브 데모** | [https://dynamic-web-strings.vercel.app/](https://dynamic-web-strings.vercel.app/) |
+| **라이브 데모** | [https://sigco3111.github.io/dynamic-web-strings/](https://sigco3111.github.io/dynamic-web-strings/) |
 | **라이선스** | MIT |
 | **의존성** | 없음 (Vanilla JS, 단일 HTML) |
 
@@ -64,7 +64,7 @@ Implementation Advice: Use Verlet Integration. Model each spider web thread as a
 ## 🚀 실행 방법
 
 ### 방법 1: 라이브 데모 (가장 간단)
-👉 [https://dynamic-web-strings.vercel.app/](https://dynamic-web-strings.vercel.app/) — 클릭 한 번
+👉 [https://sigco3111.github.io/dynamic-web-strings/](https://sigco3111.github.io/dynamic-web-strings/) — 클릭 한 번
 
 ### 방법 2: 그냥 브라우저로 열기
 ```bash
