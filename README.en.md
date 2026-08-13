@@ -10,11 +10,11 @@ Each new strand spawns a chain of **Verlet points + distance constraints** that 
 
 ## 🎬 Live Demo
 
-> **👉 [https://dynamic-web-strings.vercel.app/](https://dynamic-web-strings.vercel.app/)** — runs in any browser
+> **👉 [https://sigco3111.github.io/dynamic-web-strings/](https://sigco3111.github.io/dynamic-web-strings/)** — runs in any browser
 
 | | |
 |---|---|
-| ![Demo](https://img.shields.io/badge/Live-Demo-7C3AED?style=for-the-badge&logo=vercel&logoColor=white) | [![Repo](https://img.shields.io/badge/GitHub-sigco3111%2Fdynamic--web--strings-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/sigco3111/dynamic-web-strings) |
+| ![Demo](https://img.shields.io/badge/Live-Demo-222222?style=for-the-badge&logo=githubpages&logoColor=white) | [![Repo](https://img.shields.io/badge/GitHub-sigco3111%2Fdynamic--web--strings-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/sigco3111/dynamic-web-strings) |
 | ![Status](https://img.shields.io/badge/Status-Live-22C55E?style=flat-square) | ![Stack](https://img.shields.io/badge/Stack-Vanilla_JS-F7DF1E?style=flat-square&logo=javascript&logoColor=black) |
 | ![License](https://img.shields.io/badge/License-MIT-F1C40F?style=flat-square) | ![Deps](https://img.shields.io/badge/Dependencies-0-9CA3AF?style=flat-square) |
 
@@ -36,7 +36,7 @@ This project was generated end-to-end with the following model and prompt.
 | **Model** | MiniMax-M3 |
 | **Runtime** | OpenCode CLI |
 | **Repository** | [`sigco3111/dynamic-web-strings`](https://github.com/sigco3111/dynamic-web-strings) |
-| **Live Demo** | [https://dynamic-web-strings.vercel.app/](https://dynamic-web-strings.vercel.app/) |
+| **Live Demo** | [https://sigco3111.github.io/dynamic-web-strings/](https://sigco3111.github.io/dynamic-web-strings/) |
 | **License** | MIT |
 | **Dependencies** | None (Vanilla JS, single HTML) |
 
@@ -66,7 +66,7 @@ Implementation Advice: Use Verlet Integration. Model each spider web thread as a
 ## 🚀 Quick Start
 
 ### Option 1: Live Demo (easiest)
-👉 [https://dynamic-web-strings.vercel.app/](https://dynamic-web-strings.vercel.app/)
+👉 [https://sigco3111.github.io/dynamic-web-strings/](https://sigco3111.github.io/dynamic-web-strings/)
 
 ### Option 2: Open the file directly
 ```bash
@@ -183,7 +183,7 @@ const CONFIG = {
 
 - [x] **v0.1** — single HTML MVP + Verlet integration + click-to-draw
 - [x] **v0.2** — tension visualization + 'TING!' snap + audio
-- [x] **v0.3** — HUD sliders (wind / gravity / strength / count) + Vercel deploy + live demo
+- [x] **v0.3** — HUD sliders (wind / gravity / strength / count) + GitHub Pages deploy + live demo
 - [ ] **v0.4** — multi-anchor threads + inter-web lattice
 - [ ] **v1.0** — automated tests + formal release
 

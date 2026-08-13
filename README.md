@@ -14,7 +14,7 @@
 
 | | |
 |---|---|
-| ![Demo](https://img.shields.io/badge/Live-Demo-7C3AED?style=for-the-badge&logo=vercel&logoColor=white) | [![Repo](https://img.shields.io/badge/GitHub-sigco3111%2Fdynamic--web--strings-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/sigco3111/dynamic-web-strings) |
+| ![Demo](https://img.shields.io/badge/Live-Demo-222222?style=for-the-badge&logo=githubpages&logoColor=white) | [![Repo](https://img.shields.io/badge/GitHub-sigco3111%2Fdynamic--web--strings-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/sigco3111/dynamic-web-strings) |
 | ![Status](https://img.shields.io/badge/Status-Live-22C55E?style=flat-square) | ![Stack](https://img.shields.io/badge/Stack-Vanilla_JS-F7DF1E?style=flat-square&logo=javascript&logoColor=black) |
 | ![License](https://img.shields.io/badge/License-MIT-F1C40F?style=flat-square) | ![Deps](https://img.shields.io/badge/Dependencies-0-9CA3AF?style=flat-square) |
 
@@ -181,7 +181,7 @@ const CONFIG = {
 
 - [x] **v0.1** — 단일 HTML MVP + Verlet 적분 + 클릭 거미줄
 - [x] **v0.2** — Tension 시각화 + 'TING!' 절단 + 사운드
-- [x] **v0.3** — HUD 슬라이더 (바람/중력/줄 강도/거미줄 개수) + Vercel 배포 + 라이브 데모
+- [x] **v0.3** — HUD 슬라이더 (바람/중력/줄 강도/거미줄 개수) + GitHub Pages 배포 + 라이브 데모
 - [ ] **v0.4** — 다중 anchor + 거미줄 사이 연결 (web lattice)
 - [ ] **v1.0** — 테스트 자동화 + 정식 출시
 
